@@ -1,0 +1,49 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: telegram-bot
+  # Make it private
+  # labels:
+  #   app: secret
+  annotations:
+    #networking.knative.dev/visibility: "cluster-local"
+    # Disable auto tls, "private endpoint"
+    # networking.knative.dev/disable-auto-tls: "true"
+    # Replace ingress class
+    #networking.knative.dev/ingress-class: "istio.ingress.networking.knative.dev"
+spec:
+  template:
+    spec:
+      containers:
+        - image: localhost:32000/telegram-bot@sha256:0c886dde50a8a735773c7d0e8b309733391d224d83f824558b438360dce7bbef
+          env:
+            - name: TELOXIDE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-access
+                  key: TELOXIDE_TOKEN
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: surreal-db-access
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: surreal-db-access
+                  key: DB_PASSWORD
+            - name: DB_URL
+              value: http://10.0.1.1:8080
+            - name: ENV
+              value: production
+    metadata:
+      annotations:
+        # Knative concurrency-based autoscaling (default).
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/metric: concurrency
+        # Target 10 requests in-flight per pod.
+        autoscaling.knative.dev/target: "50"
+        # Disable scale to zero with a min scale of 1.
+        autoscaling.knative.dev/min-scale: "0"
+        # Limit scaling to 1000 pods.
+        autoscaling.knative.dev/max-scale: "10"
