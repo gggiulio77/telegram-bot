@@ -1,51 +1,33 @@
-mod handler;
-
-use crate::handler::message_handler;
-use std::error::Error;
+mod bot;
+mod db;
 
 use dotenv::dotenv;
-use surrealdb::{engine::remote::ws::Ws, opt::auth::Root, Surreal};
-use teloxide::{
-    error_handlers::IgnoringErrorHandlerSafe, prelude::*, update_listeners::webhooks, Bot,
-};
+use std::error::Error;
+use teloxide::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
-    pretty_env_logger::init();
-    log::info!("Starting buttons bot...");
 
-    let db = Surreal::new::<Ws>(std::env::var("DB_URL")?).await?;
+    tracing_subscriber::fmt::init();
 
-    db.signin(Root {
-        username: &std::env::var("DB_USER")?,
-        password: &std::env::var("DB_PASSWORD")?,
-    })
-    .await?;
+    log::info!("Conencting db...");
 
-    db.use_ns("test").use_db("test").await?;
+    let db = db::init().await?;
 
-    let bot = Bot::from_env();
+    log::info!("Starting bot...");
 
-    let addr = ([127, 0, 0, 1], 8443).into();
-    let url = "https://telegram-bot.default.sentateenesta.duckdns.org"
-        .parse()
-        .unwrap();
-    let listener = webhooks::axum(bot.clone(), webhooks::Options::new(addr, url))
-        .await
-        .expect("Couldn't setup webhook");
+    let (bot, handler, update_listener) = bot::init_with_webhook().await?;
 
-    let handler = dptree::entry().branch(Update::filter_message().endpoint(message_handler));
+    // TODO: think a way to support polling and webhook
+    // TODO: add error handler
 
-    Dispatcher::builder(bot, handler)
+    Dispatcher::builder(bot.clone(), handler)
         .dependencies(dptree::deps![db])
         .enable_ctrlc_handler()
         .build()
-        .dispatch_with_listener(listener, IgnoringErrorHandlerSafe::new())
+        .dispatch_with_listener(update_listener, LoggingErrorHandler::new())
         .await;
 
     Ok(())
 }
-
-// TODO: add production webhook support
-// TODO: re estructure project

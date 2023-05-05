@@ -15,7 +15,7 @@ spec:
   template:
     spec:
       containers:
-        - image: localhost:32000/telegram-bot@sha256:0c886dde50a8a735773c7d0e8b309733391d224d83f824558b438360dce7bbef
+        - image: localhost:32000/telegram-bot@sha256:e55b5a744a7bca3d770bf95d3f67cb85a47525038876156cfedab4a7a081c167
           env:
             - name: TELOXIDE_TOKEN
               valueFrom:
@@ -33,9 +33,15 @@ spec:
                   name: surreal-db-access
                   key: DB_PASSWORD
             - name: DB_URL
-              value: http://10.0.1.1:8080
+              value: 10.0.1.1:8080
+            - name: TELOXIDE_URL
+              value: https://telegram-bot.default.sentateenesta.duckdns.org
             - name: ENV
               value: production
+            - name: RUST_LOG
+              value: debug
+            - name: RUST_BACKTRACE
+              value: "1"
     metadata:
       annotations:
         # Knative concurrency-based autoscaling (default).

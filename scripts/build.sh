@@ -2,7 +2,7 @@
 
 echo "building rust binary..."
 
-cargo build --bin function --target x86_64-unknown-linux-musl --release
+cargo build  --release
 
 echo "building builder image with cache..."
 
@@ -22,4 +22,4 @@ image_digest=$(docker inspect --format='{{index .RepoDigests 0}}' localhost:3200
 
 echo "image digest: ${image_digest}"
 
-sed -Ei.bak "{n;s~(image: ).*~\1$image_digest~}" /home/gg/telegram-bot/server.service.yml
+sed -Ei.bak "{n;s~(image: ).*~\1$image_digest~}" /home/gg/telegram-bot/knative.server.service.yml
