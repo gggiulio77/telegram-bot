@@ -33,7 +33,7 @@ spec:
                   name: surreal-db-access
                   key: DB_PASSWORD
             - name: DB_URL
-              value: 10.0.1.1:8080
+              value: surrealdb.default.svc.cluster.local:8000
             - name: TELOXIDE_URL
               value: https://telegram-bot.default.sentateenesta.duckdns.org
             - name: ENV
