@@ -4,16 +4,17 @@ use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
 use surrealdb::Surreal;
 
-#[derive(Debug, Serialize)]
-struct Name<'a> {
-    first: &'a str,
-    last: &'a str,
+#[derive(Debug, Deserialize, Serialize)]
+struct Name {
+    first: String,
+    last: String,
 }
 
-#[derive(Debug, Serialize)]
-struct Person<'a> {
-    title: &'a str,
-    name: Name<'a>,
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(dead_code)]
+pub struct Person {
+    title: String,
+    name: Name,
     marketing: bool,
 }
 
@@ -31,7 +32,7 @@ struct Record {
 #[tokio::main]
 async fn main() -> surrealdb::Result<()> {
     // Connect to the server
-    let db = Surreal::new::<Ws>("127.0.0.1:80").await?;
+    let db = Surreal::new::<Ws>("127.0.0.1:8000").await?;
 
     // Signin as a namespace, database, or root user
     db.signin(Root {
@@ -47,10 +48,10 @@ async fn main() -> surrealdb::Result<()> {
     let created: Record = db
         .create("person")
         .content(Person {
-            title: "Founder & CEO",
+            title: "Founder & CEO".to_owned(),
             name: Name {
-                first: "Tobie",
-                last: "Morgan Hitchcock",
+                first: "Tobie".to_owned(),
+                last: "Morgan Hitchcock".to_owned(),
             },
             marketing: true,
         })
@@ -65,7 +66,8 @@ async fn main() -> surrealdb::Result<()> {
     // dbg!(updated);
 
     // Select all people records
-    let people: Vec<Record> = db.select("person").await?;
+    let people: Person = db.select(("person", "juan")).await?;
+
     dbg!(people);
 
     // Perform a custom advanced query
