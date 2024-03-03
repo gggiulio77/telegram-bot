@@ -45,8 +45,11 @@ pub async fn message_handler(
                 };
                 // TODO: move this to a repository
                 // TODO: if first_name si None, it means the bot is in a public chat. Add logic to manage this case.
-                let created: Record = if let Some(first_name) = msg.chat.first_name() {
-                    db.update(("user", first_name)).content(data).await?
+                let created: Vec<Record> = if let Some(first_name) = msg.chat.first_name() {
+                    db.update(("user", first_name))
+                        .content(data)
+                        .await?
+                        .unwrap()
                 } else {
                     db.create("user").content(data).await?
                 };

@@ -45,7 +45,7 @@ async fn main() -> surrealdb::Result<()> {
     db.use_ns("test").use_db("test").await?;
 
     // Create a new person with a random id
-    let created: Record = db
+    let created: Vec<Record> = db
         .create("person")
         .content(Person {
             title: "Founder & CEO".to_owned(),
@@ -66,7 +66,7 @@ async fn main() -> surrealdb::Result<()> {
     // dbg!(updated);
 
     // Select all people records
-    let people: Person = db.select(("person", "juan")).await?;
+    let people: Person = db.select(("person", "juan")).await?.unwrap();
 
     dbg!(people);
 
