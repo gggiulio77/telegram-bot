@@ -45,6 +45,7 @@ pub async fn message_handler(
                 };
                 // TODO: move this to a repository
                 // TODO: if first_name si None, it means the bot is in a public chat. Add logic to manage this case.
+                // TODO: refactor to use an email instead of first_name. If we cant get it from telegram User, add a step to require it.
                 let created: Vec<Record> = if let Some(first_name) = msg.chat.first_name() {
                     db.update(("user", first_name))
                         .content(data)
